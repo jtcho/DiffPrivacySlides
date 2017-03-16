@@ -1,0 +1,240 @@
+
+
+\documentclass[aspectratio=169]{beamer}
+\usetheme{CambridgeUS}
+
+\setbeamertemplate{navigation symbols}{}%remove navigation symbols
+\setbeamersize{text margin left=30pt, text margin right=30pt}
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+
+\newcommand{\emm}{\mathcal{M}}
+\newcommand{\dbd}{\mathbb{N}^{|\chi|}}
+
+\title{Introduction to Differential Privacy}
+\author{J.T. Cho}
+\institute{CIS700-003 | University of Pennsylvania}
+\date{March 2017}
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}
+\frametitle{TODO: Introduction and Motivation}
+\end{frame}
+
+\begin{frame}
+\frametitle{Intuitively Formalizing Privacy}
+
+\textbf{Desiderata.} An individual's risk is not increased significantly by opting into a study.\\~\\
+
+In other words, individuals should have \textit{plausible deniability}.\\~\\
+%% Suppose we want to test for the percentage of smokers in a population
+%% of people.
+\end{frame}
+
+\begin{frame}
+\frametitle{A Game of Plausible Deniability}
+  Suppose we want to test for the percentage of smokers in a population of people.\\~\\
+
+  \textbf{Goal.} Design a protocol for surveying people so they may claim plausible deniability of being a smoker.
+\end{frame}
+
+%% Randomized Response
+\begin{frame}
+\frametitle{Randomized Response}
+\textbf{Protocol.}\\~\\
+\begin{enumerate}
+  \item Flip fair coin.
+  \item If tails, respond truthfully.
+  \item If heads, flip second coin, respond \texttt{Yes} if heads, \texttt{No} if tails.
+\end{enumerate}
+
+How does this give us plausible deniability?
+\end{frame}
+
+%% Randomized Response, cont.
+\begin{frame}
+\frametitle{Randomized Response, cont.}
+  Plausibility deniability of any outcome gives us privacy - can't single out an individual. \\~\\
+
+  Adding uncertainty to query output in the form of randomness/noise allows us to achieve this.\\~\\
+
+  The issue is then to analyze the noisy data to derive an accurate result!
+
+  %% Do analysis of expectations here.
+\end{frame}
+
+%% Intuitively Defining Differential Privacy
+\begin{frame}
+\frametitle{Intuitively Defining Differential Privacy}
+
+We are given a database, an individual, and a mechanism which processes queries.\\~\\
+
+This mechanism should with high probability output the same result whether or not the individual's information is in the database!
+\end{frame}
+
+\begin{frame}
+\frametitle{Model of Computation}
+
+\textbf{Definition.} (Probability Simplex) Given a discrete set $B$, the probability simplex over $B$ denoted $\Delta(B)$ is
+
+$$\Delta(B) = \bigg\{ x \in \mathbb{R}^{|B|}\;:\; x_i \geq 0\;\forall i, \sum_{i=1}^{|B|} x_i = 1\bigg\}$$
+
+In plain English, $\Delta(B)$ is the set of all probability vectors of length $|B|$ that sum to $1$.
+\end{frame}
+
+%% Model of Computation, cont.
+\begin{frame}
+\frametitle{Model of Computation, cont.}
+
+\textbf{Definition.} (Mechanism) A mechanism $\emm$ with domain $A$ and range $B$ is associated with the mapping $\emm\;:\;A \rightarrow \Delta(B)$. On input $a \in A$, the mechanism $\emm$ outputs $\emm(a) = b$ with probability $(\emm(a))_b$ for each $b \in B$.\\~\\
+
+The probability is taken over the randomness of the mechanism (coin flips).\\~\\
+
+Our goal is to find a differentially private mechanism!
+
+\end{frame}
+
+%% Model of Computation, cont.
+\begin{frame}
+\frametitle{Model of Computation, cont.}
+
+A database will be represented as a `histogram' vector $x \in \dbd$, counting the frequency of each element from the universe $\chi$.\\~\\
+
+\textbf{Definition.} (Distance Between Databases) The $\ell_1$ norm of a database $x$ is denoted $||x||_1$, defined as
+
+$$||x||_1 = \sum_{i=1}^{|\chi|} |\chi_i|$$
+
+The $\ell_1$ distance between $2$ databases $x, y$ is $||x-y||_1$, the number of records differing between $x$ and $y$.
+\end{frame}
+
+%% Differential Privacy
+\begin{frame}
+\frametitle{Differential Privacy}
+
+\textbf{Definition.} A mechanism $\emm$ on a database with domain $\dbd$ is $(\epsilon, \delta)$-differentially private if $\forall S \subseteq \text{Range}(\emm)$ and $\forall x,y \in \dbd$ such that $||x-y||_1 \leq 1$,
+
+$$\Pr(\emm(x) \in S) \leq \exp(\epsilon) \Pr(\emm(y) \in S) + \delta$$
+
+with the probability space over the coin flips in the mechanism $\emm$.\\~\\
+
+If $\delta = 0$, $\emm$ is $\epsilon$-differentially private.
+\end{frame}
+
+%% Differential Privacy, cont.
+\begin{frame}
+\frametitle{Understanding the Definition}
+
+Consider the singleton set $\{s\} \subseteq \text{Range}(\emm)$ - $s$ is an example output of $\emm$.\\~\\
+
+If $\emm$ is $\epsilon$-diff. private, the probability of outputting $s$ on $x$ is at most $e^{\epsilon}$ times the probability of outputting $s$ on any neighboring database $y$.\\~\\
+\end{frame}
+
+%% Understanding the Definition, cont.
+\begin{frame}
+\frametitle{Understanding the Definition, cont.}
+In other words, the definition states that the probability of any output of $\emm$ is within an $e^{\epsilon}$ factor of whether or not an individual is included in the database.\\~\\
+
+The smaller $\epsilon$ is, the stronger the `privacy' guarantee!
+\end{frame}
+
+%% Randomized Response, Revisited
+\begin{frame}
+\frametitle{Randomized Response, Revisited}
+\textbf{Claim.} Randomized response is $(\ln 3, 0)-$differentially private.\\~\\
+
+\textit{Proof.} Let the databases be drawn from universe $\{0, 1\}$ and the mechanism range $\text{Range}(\emm) = \{0, 1\}$.
+
+$$\Pr(\text{Response = No} \mid \text{Truth = No}) = \Pr(M(0) \in \{0\}) = 3/4$$
+$$\Pr(\text{Response = No} \mid \text{Truth = Yes}) = \Pr(M(1) \in \{0\}) = 1/4$$
+
+If $\epsilon = \ln 3$, 
+\begin{align*}
+  \Pr(M(0) \in \{0\}) = 3/4 \leq \exp(\epsilon) \Pr(M(1) \in \{0\}) = 3/4\\
+  \Pr(M(1) \in \{0\}) = 1/4 \leq \exp(\epsilon) \Pr(M(0) \in \{0\}) = 9/4\\
+\end{align*}
+\end{frame}
+
+%%
+\begin{frame}
+\frametitle{Finding an $\epsilon$-private Mechanism}
+Our intuition from before is that adding noise to original data gives `privacy'.\\~\\
+
+Instead of coin flips, what if we chose a different probability distribution and added a dependence on $\epsilon$?\\~\\
+
+We also want to be able to control how sensitive the mechanism is to changes in the database (i.e. should including a single individual result in a big change in the output?)
+\end{frame}
+
+%% Laplace Distribution
+\begin{frame}
+\frametitle{Laplace Distribution}
+
+\textbf{Definition.} (Laplace Distribution) The Laplace distribution centered at 0 with scale $b$ has the pdf,
+
+$$\text{Lap}(x\mid b) = \frac{1}{2b} \exp(-\frac{|x|}{b})$$
+
+and variance,
+
+$$\sigma^2 = 2b^2$$
+
+Often written as Lap$(b)$ for short.
+\end{frame}
+
+%% l1 sensitivity
+\begin{frame}
+\frametitle{$\ell_1$ sensitivity}
+
+We define \textbf{numeric queries} to be functions $f: \dbd \rightarrow \mathbb{R}^k$ (i.e. taking in a database and outputting a $k$-long real-valued vector).\\~\\
+
+\textbf{Definition.} ($\ell_1$-sensitivity) The $\ell_1$-sensitivity of a numeric query $f$ is: 
+
+$$\Delta f: \max_{\substack{x,y \in \dbd\\ ||x-y||_1 = 1}} ||f(x) - f(y)||_1$$
+
+The $\ell_1$-sensitivity captures the magnitude by which an individual's data can change the function $f$ in the worst case.
+\end{frame}
+
+%% Laplace Mechanism
+\begin{frame}
+\frametitle{Laplace Mechanism}
+
+\textbf{Definition.} (Laplace Mechanism) Given any function $f\;:\; \dbd \rightarrow \mathbb{R}^k$, the Laplace mechanism is defined,
+
+$$\emm_L(x, f(\cdot), \epsilon) = f(x) + (Y_1, Y_2, \dots, Y_k)$$\\~\\
+
+where the $Y_i$ are i.i.d. drawn from $\text{Lap}(\Delta f/\epsilon)$.
+\end{frame}
+
+%% Laplace Mechanism, cont.
+\begin{frame}
+\frametitle{Laplace Mechanism, cont.}
+
+\textbf{Theorem.} The Laplace mechanism preserves $(\epsilon, 0)$-differential privacy.\\~\\
+
+\emph{Sketch of Proof.} Consider any two databases $x$ and $y$ that differ in at most $1$ record and a database function $f$. \\~\\
+
+Consider the probabilities of getting some arbitrary value $z$ from evaluating the mechanism $\emm_L(x, f, \epsilon)$ and $\emm_L(y, f, \epsilon)$.\\~\\
+
+Taking the ratio and using the Laplace distribution pdf, use a series of inequality bounds to demonstrate that the ratio is bounded by $\exp(\epsilon)$.
+
+%% To be shown on the chalkboard.
+\end{frame}
+
+%% Laplace Mechanism Example
+\begin{frame}
+\frametitle{Example}
+
+\textbf{Input.} Database $x$ of medical information of $N$ records.\\~\\
+
+\textbf{Goal.} Compute proportion of smokers in a differentially private way.\\~\\
+
+$g(x) = [\#$ of smokers in $x]/N$.\\~\\
+
+For any two databases differing in a single element, what is the largest amount that the proportion can change by?
+\end{frame}
+
+\end{document}
