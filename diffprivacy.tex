@@ -8,6 +8,8 @@
 
 \usepackage{amsmath}
 \usepackage{amsfonts}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode} 
 
 \newcommand{\emm}{\mathcal{M}}
 \newcommand{\dbd}{\mathbb{N}^{|\chi|}}
@@ -235,6 +237,141 @@ Taking the ratio and using the Laplace distribution pdf, use a series of inequal
 $g(x) = [\#$ of smokers in $x]/N$.\\~\\
 
 For any two databases differing in a single element, what is the largest amount that the proportion can change by?
+\end{frame}
+
+\begin{frame}
+\frametitle{Exponential Mechanism}
+
+Designed for non-numerical queries and cases where adding noise directly to the output is undesirable.\\~\\
+
+Utility function $u\;:\; \dbd \times \mathcal{R} \rightarrow \mathbb{R}$, maps database/output pairs to utility scores.\\~\\
+
+\emph{Sensitivity of $u$:}
+
+$$\Delta u = \max_{r \in \mathcal{R}} \max_{x,y:||x-y||_1 \leq 1} |u(x,r) - u(y,r)|$$
+
+\emph{Intuition.} Output element of $\mathcal{R}$ with maximum possible utility.\\~\\
+\end{frame}
+
+\begin{frame}
+\frametitle{Exponential Mechanism, cont.}
+
+\textbf{Definition.} (Exponential Mechanism) The exponential mechanism $\emm_E(x, u, \mathcal{R})$ selects and outputs an element $r \in \mathcal{R}$ with probability proportional to $\exp(\frac{\epsilon u(x,y)}{2\Delta u})$.
+\end{frame}
+
+\begin{frame}
+\frametitle{Exponential Mechanism, cont.}
+
+\textbf{Theorem.} The exponential mechanism preserves $(\epsilon, 0)$-differential privacy.
+\end{frame}
+
+\begin{frame}
+\frametitle{Differentially Private Online Learning}
+
+\textbf{Context.} You want to invest in the stock market and have assembled a panel of experts. Each day, you can pick one expert's choice of stock to invest in.\\~\\
+
+\textbf{Goal.} Each day, pick experts such that after a period of time you do almost as well as the best expert!\\~\\
+\end{frame}
+
+\begin{frame}
+\frametitle{Differentially Private Online Learning, cont.}
+
+\textbf{Scenario.} Each day $t = 1, \dots, T$.
+\begin{enumerate}[(a)]
+  \item Choose expert $a_t \in \{1, \dots, k\}$.
+  \item Observe loss $\ell_i^t \in [0,1]$ for each expert $i \in \{1, \dots, k\}$ and experiences loss $\ell_a^t$.\\~\\
+
+  For sequence of losses $\ell^{\leq T} = \{\ell^k\}_{t=1}^T$,
+  $$L_i(\ell^{\leq T}) = \frac{1}{T} \sum_{t=1}^T \ell_i^t \text{    (total avg. loss of expert $i$)}$$
+  $$L_A(\ell^{\leq T}) = \frac{1}{T} \sum_{t=1}^T \ell_{a_t}^t \text{    (total avg. loss of algorithm)}$$
+\end{enumerate}
+\end{frame}
+
+\begin{frame}
+\frametitle{No Regret Learning}
+
+$$\text{Regret}(A, \ell^{\leq T}) = L_A(\ell^{\leq T}) - \min_i L_i (\ell^{\leq T})$$\\~\\
+
+Regret is the difference between the loss incurred by the algorithm and the loss of the best expert.\\~\\
+
+\textbf{Goal.} Design algorithms guaranteeing that \emph{for all} possible loss sequences $\ell^{\leq T}$, even adversarilly chosen,
+
+$$\text{Regret} \rightarrow 0 \text{ as } T\rightarrow \infty$$
+\end{frame}
+
+\begin{frame}
+\frametitle{Random Weighted Majority Algorithm}
+
+\textbf{Input.} Stream $\sigma_{\ell}$ of losses $\ell^1, \ell^2, \dots$\\~\\
+
+\textbf{Output.} Stream of actions $a_1, a_2, \dots$\\~\\
+
+\begin{algorithm}[H]
+\begin{algorithmic}
+  \Procedure{RWM}{$\eta$}
+  \For{$i \in \{1, \dots, k\}$, let $w_i \gets 1$}
+  \EndFor
+  \For{$t=1,\dots,$}
+    \State{Choose action $a_t = i$ with probability proportional to $w_i$.}
+    \State{Observe $\ell^t$ and set $w_i \gets w_i \cdot \exp(-\eta \ell_i^t), \forall i \in [k]$}
+  \EndFor
+  \EndProcedure
+\end{algorithmic}
+\end{algorithm}
+\end{frame}
+
+\begin{frame}
+\frametitle{Random Weighted Majority Algorithm, cont.}
+
+\textbf{Theorem.} for any adversarially chosen sequence of losses of length $T$, $\ell^{\leq T} = (\ell^1, \dots, \ell^T)$, the R.W.M. algorithm with update parameter $\eta$ has guarantee:
+
+$$E[\text{Regret}(\text{RWM}(\eta), \ell^{\leq T})] \leq \eta + \frac{\ln(k)}{nT}$$
+
+Choosing $\eta = \sqrt{\ln k/T}$ yields
+
+$$E[\text{Regret(RWM}(\eta), \ell^{\leq T})] \leq 2\sqrt{\frac{\ln k}{T}}$$
+
+which tends to $0$ as $T$ goes to $\infty$.
+\end{frame}
+
+\begin{frame}
+\frametitle{Differentially Private Online Learning, cont.}
+
+Can we do the same process but in a differentially private way?\\~\\
+
+What should our ``input database'' be? Our output?
+\end{frame}
+
+\begin{frame}
+\frametitle{Differentially Private Online Learning, cont.}
+\textbf{Input Database.} Collection of loss vectors $\ell^{\leq T} = (\ell^1, \dots, \ell^T)$. Neighboring databases $\ell^{\hat{\leq}T}$ differs in entire vector in $1$ timestep.\\~\\
+
+\textbf{Output.} Sequence of actions chosen by the algorithm, $a_1,\dots, a_T$.
+\end{frame}
+
+\begin{frame}
+\frametitle{Random Weighted Majority Algorithm, cont.}
+
+We present the same algorithm from before, presented in a slightly different way.
+
+\begin{algorithm}[H]
+\begin{algorithmic}
+  \Procedure{RWM}{$\eta$}
+  \For{$t=1,\dots,$}
+    \State{Choose action $a_t = i$ with probability proportional to $\exp(-\eta \sum_{j=1}^{t-1}\ell_i^j)$.}
+    \State{Observe $\ell^t$.}
+  \EndFor
+  \EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+This is the exponential mechanism with quality score $q(i, \ell^{< T}) \sum_{j=1}^{t-1} \ell_i^j$.
+\end{frame}
+
+\begin{frame}
+\frametitle{Differential Privacy and RWM}
+
+\textbf{Theorem.} For a sequence of losses of length $T$, the algorithm RWM($\eta$) with $\eta = \frac{\epsilon}{\sqrt{32 T \ln(1/\delta)}}$ is ($\epsilon, \delta)$
 \end{frame}
 
 \end{document}
