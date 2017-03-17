@@ -10,6 +10,8 @@
 \usepackage{amsfonts}
 \usepackage{algorithm}
 \usepackage[noend]{algpseudocode} 
+\usepackage{tikz}
+\usetikzlibrary{arrows}
 
 \newcommand{\emm}{\mathcal{M}}
 \newcommand{\dbd}{\mathbb{N}^{|\chi|}}
@@ -26,7 +28,43 @@
 \end{frame}
 
 \begin{frame}
-\frametitle{TODO: Introduction and Motivation}
+\frametitle{Introduction}
+
+Data collection in the modern era.\\~\\
+
+Want to be able to compute statistics and respond to queries on sensitive datasets.\\~\\
+
+\emph{Paradox.} Can we learn information about a population without learning anything about the individual?
+\end{frame}
+
+\begin{frame}
+\frametitle{Privacy Accuracy Tradeoff}
+\begin{center}
+\begin{tikzpicture}
+\draw[latex-latex] (-4,0) -- (4, 0);
+\draw[shift={(-4, 0)}, color=black] (0pt,0pt) -- (0pt, 0pt) node[below] {better privacy, less accuracy};
+\draw[shift={(0, 0)}, color=black] (0pt,0pt) -- (0pt, 0pt) node[below] {$\epsilon$};
+\draw[shift={(4, 0)}, color=black] (0pt,0pt) -- (0pt, 0pt) node[below] {better accuracy, less privacy};
+\end{tikzpicture}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Privacy Preserving Data Analysis}
+
+\begin{itemize}
+  \item Data can not remain fully anonymized and remain useful. (e.g. linkage attack)
+  \item Re-identification of anonymized records is not the only risk. (even without direct linkage, incriminating information can still be found)
+  \item Can we query audit?
+  \item Summary statistics are not safe, either.
+  \item Ordinary traits can still be used to indirectly reveal sensitive properties.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Differencing Attack}
+
+\emph{Example.} You are given a medical database of individuals and the knowledge that a person $X$ is in the database. If you aren't allowed to query for $X$'s properties directly, how would you determine whether $X$ has diabetes?
 \end{frame}
 
 \begin{frame}
@@ -161,6 +199,28 @@ If $\epsilon = \ln 3$,
   \Pr(M(1) \in \{0\}) = 1/4 \leq \exp(\epsilon) \Pr(M(0) \in \{0\}) = 9/4\\
 \end{align*}
 \end{frame}
+
+\begin{frame}
+\frametitle{Benefits of Differential Privacy}
+\begin{itemize}
+  \item Protection against arbitrary risks, not just re-identification
+  \item Neutralization of linkage attacks (past/present/future), and auxiliary information
+  \item Quantification of privacy loss
+  \item Composition (combining differentially private mechanisms)
+  \item Group Privacy
+  \item Closure under Post-Processing (differential privacy can't be reduced after)
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{What Differential Privacy Does Not Promise}
+
+\begin{itemize}
+  \item Does not create privacy where there was none
+  \item Does not guarantee that one's secrets will be protected. Aggregate conclusions can still reflect on the individual. (Merely occludes specifics of a person's participation)
+\end{itemize}
+\end{frame}
+
 
 %%
 \begin{frame}
@@ -371,7 +431,7 @@ This is the exponential mechanism with quality score $q(i, \ell^{< T}) \sum_{j=1
 \begin{frame}
 \frametitle{Differential Privacy and RWM}
 
-\textbf{Theorem.} For a sequence of losses of length $T$, the algorithm RWM($\eta$) with $\eta = \frac{\epsilon}{\sqrt{32 T \ln(1/\delta)}}$ is ($\epsilon, \delta)$
+\textbf{Theorem.} For a sequence of losses of length $T$, the algorithm RWM($\eta$) with $\eta = \frac{\epsilon}{\sqrt{32 T \ln(1/\delta)}}$ is ($\epsilon, \delta)$-differentially private.
 \end{frame}
 
 \end{document}
